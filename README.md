@@ -1,0 +1,506 @@
+<!-- [![Build Status](https://travis-ci.org/IBM/VaccineSupplyChain.svg?branch=master)](https://travis-ci.org/IBM/VaccineSupplyChain) -->
+
+# Create a fair trade supply network with Hyperledger Fabric and IBM Blockchain Platform V2
+
+This project is derived from a similar project developed by Horea Porutiu (IBM). The aim of this project was to develop a tracking application for end users to back track the covid-19 vaccines.
+Every vaccine could be back-tracked to the manufacturer and additionally, the user can view other details such as the suggested age group for that vaccine, information on tester and practitioner and condition of the vaccine shot.
+
+In this code pattern we will create a blockchain app that increases visibility and efficiency in the vaccine supply chain using IBM Blockchain Platform V2 Beta. We will use different transactions to show different possible actions for the different participants in the supply chain. This sample application will record all transactions on the IBM Blockchain Platform V2 Beta. The code pattern can be useful to developers that are looking into learning more about creating applications that integrate supply chains with Hyperledger Fabric.
+
+When the reader has completed this code pattern, they will understand how to:
+
+* Interact with the (free) IBM Blockchain Platform V2 Beta
+* Build a blockchain back-end using Hyperledger Fabric
+* Create and use a (free) Kubernetes Cluster
+* Deploy a Node.js app in the cloud that will interact with our smart contract
+
+# Flow Diagram
+<br>
+<p align="center">
+  <img src="docs/app-architecture.png">
+</p>
+<br>
+
+# Flow Description
+1. The blockchain operator sets up the IBM Blockchain Platform 2.0 service.
+2. The IBM Blockchain Platform 2.0 creates a Hyperledger Fabric network on an IBM Kubernetes 
+Service, and the operator installs and instantiates the smart contract on the network.
+3. The Node.js application server uses the Fabric SDK to interact with the deployed network on IBM Blockchain Platform 2.0 and creates APIs for a web client.
+4. The Loopback 4 client uses the Node.js application API to interact with the network.
+5. The user interacts with the Loopback 4 web interface to update and query the blockchain ledger and state.
+
+# Included components
+*	[IBM Blockchain Platform V2 Beta](https://console.bluemix.net/docs/services/blockchain/howto/ibp-v2-deploy-iks.html#ibp-v2-deploy-iks) gives you total control of your blockchain network with a user interface that can simplify and accelerate your journey to deploy and manage blockchain components on the IBM Cloud Kubernetes Service.
+*	[IBM Cloud Kubernetes Service](https://www.ibm.com/cloud/container-service) creates a cluster of compute hosts and deploys highly available containers. A Kubernetes cluster lets you securely manage the resources that you need to quickly deploy, update, and scale applications.
+* [IBM Blockchain Platform Extension for VS Code](https://marketplace.visualstudio.com/items?itemName=IBMBlockchain.ibm-blockchain-platform) is designed to assist users in developing, testing, and deploying smart contracts -- including connecting to Hyperledger Fabric environments.
+
+## Featured technologies
++ [Hyperledger Fabric v1.4](https://hyperledger-fabric.readthedocs.io) is a platform for distributed ledger solutions, underpinned by a modular architecture that delivers high degrees of confidentiality, resiliency, flexibility, and scalability.
++ [Node.js](https://nodejs.org) is an open source, cross-platform JavaScript run-time environment that executes server-side JavaScript code.
++ [Loopback 4](https://v4.loopback.io/) LoopBack is a highly-extensible, open-source Node.js framework that enables you to: Create dynamic end-to-end REST APIs with little or no coding. Access data from major relational databases, MongoDB, SOAP and REST APIs. Incorporate model relationships and access controls for complex APIs.
+
+## Prerequisites
+
+This pattern assumes you have an **IBM Cloud account**, **VSCode** and **IBM Blockchain Platform Extension for VSCode installed**
+
+- [IBM Cloud account](https://cloud.ibm.com/registration/?target=%2Fdashboard%2Fapps)
+- [Install VSCode](https://code.visualstudio.com/download)
+- [Install IBM Blockchain Platform Extension for VSCode](https://github.com/IBM-Blockchain/blockchain-vscode-extension)
+![packageFile](/docs/img1-IBM_Extension.png)
+- [Node v8.x or greater and npm v5.x or greater](https://nodejs.org/en/download/)
+
+# Steps (Cloud Deployment)
+> To run a local network, you can find steps [here](./docs/run-local.md).
+1. [Clone the Repo](#step-1-clone-the-repo)
+2. [Install Dependencies](#step-2-install-dependencies)
+3. [Package Contract](#step-3-package-contract)
+4. [Create IBM Cloud services](#step-4-create-ibm-cloud-services)
+5. [Build a network](#step-5-build-a-network)
+6. [Deploy VaccineSC Smart Contract on the network](#step-6-deploy-VaccineSC-smart-contract-on-the-network)
+7. [Connect application to the network](#step-7-connect-application-to-the-network)
+8. [Run the application](#step-8-run-the-application)
+
+## Step 1. Clone the Repo
+
+Git clone this repo onto your computer in the destination of your choice, then go into the web-app folder:
+```
+User$ git clone https://github.com/prathamesh-p11/Vaccine-SupplyChain.git
+```
+Navigate to the `web-app` directory:
+```
+User$ cd VaccineSC/web-app
+```
+
+## Step 2. Install Dependencies
+
+Install required dependencies using NPM:
+```
+web-app$ npm install --ignore-scripts
+```
+
+## Step 3. Package Contract
+
+
+![packageFile](/docs/img2_addLibToWorkspace.png)
+Right-click under your folders in your workspace area and then click *Add Folder to Workspace* and then highlight the 
+`VaccineSupplyChain/lib` directory as shown in the picture below, and then click on *add*:
+
+![packageFile](/docs/img3-addLib.png)
+
+ Next, we have to package the smart contract. Click on the *F1* button on your keyboard,
+ which will bring up the VSCode command palette. From there, navigate and click on `Package a Smart Contract Project`.
+![packageFile](/docs/img4-package.png)
+
+
+ Next, the extension will ask the following question:
+ ```
+ Choose a workspace folder to package
+ ```
+ Click on the *lib* folder - note we do not want to package our client (i.e. our web-app directory).
+
+  ![packageFile](/docs/img5-selectLib.png)
+
+ If all went well, you should see the following. 
+
+  ![packageFile](/docs/img6-PackagedContract.png)
+ 
+ Note that this `.cds` file is extremely important if we want to run 
+ our smart contract on the cloud. 
+
+## Step 4. Create IBM Cloud services
+
+* Create the [IBM Cloud Kubernetes Service](https://cloud.ibm.com/catalog/infrastructure/containers-kubernetes).  You can find the service in the `Catalog`.  For this code pattern, we can use the `Free` cluster, and give it a name.  Note, that the IBM Cloud allows one instance of a free cluster and expires after 30 days. <b>The cluster takes around 10-15
+minutes to provision, so please be patient!</b>
+
+<br>
+<p align="center">
+  <img src="docs/doc-gifs/gif1-create-cluster.gif">
+</p>
+<br>
+
+* Create the [IBM Blockchain Platform V2 Beta](https://console.bluemix.net/catalog/services/blockchain/) service on the IBM Cloud.  You can find the service in the `Catalog`, and give a name.
+
+
+* After your kubernetes cluster is up and running, you can deploy your IBM Blockchain Platform V2 Beta on the cluster.  The service walks through few steps and finds your cluster on the IBM Cloud to deploy the service on.
+
+<br>
+<p align="center">
+  <img src="docs/doc-gifs/gif2-joincluster.gif">
+</p>
+<br>
+
+* Once the Blockchain Platform is deployed on the Kubernetes cluster, you can launch the console to start operating on your blockchain network.
+
+<br>
+<p align="center">
+  <img src="docs/doc-gifs/gif3-openBlockchainPlatform.gif">
+</p>
+<br>
+
+## Step 5. Build a network
+
+We will build a network as provided by the IBM Blockchain Platform [documentation](https://console.bluemix.net/docs/services/blockchain/howto/ibp-console-build-network.html#ibp-console-build-network).  This will include creating a channel with a single peer organization with its own MSP and CA (Certificate Authority), and an orderer organization with its own MSP and CA. We will create the respective identities to deploy peers and operate nodes.
+
+### Create your organization and your entry point to your blockchain
+
+* #### Create your peer organization CA
+  - Click <b>Add Certificate Authority</b>.
+  - Click <b>IBM Cloud</b> under <b>Create Certificate Authority</b> and <b>Next</b>.
+  - Give it a <b>Display name</b> of `Org1 CA`.  
+  - Specify an <b>Admin ID</b> of `admin` and <b>Admin Secret</b> of `adminpw`.
+
+![packageFile](/docs/img7-newCA.png)
+![packageFile](/docs/img8-newCA2.png)
+![packageFile](/docs/img9-newOrg1CA.png)
+![packageFile](/docs/img10-addnewCA.png)
+
+
+* #### Associate the identity
+
+ - In the Nodes tab, select the <b>Org1 CA</b> once it is running (indicated by the green box in the tile).
+ - Click <b>Associate identity</b> on the CA overview panel.
+![packageFile](/docs/img11-assocCAID.png)
+ - On the side panel, select <b>Enroll ID</b>.
+![packageFile](/docs/img11-assocCAID2.png)
+ - Provide an <b>Enroll ID</b> of `admin` and an <b>Enroll secret</b> of `adminpw`. Use the default value of `Org1 CA Admin` for the <b>Identity display name</b>.
+![packageFile](/docs/img11-assocCAID3.png)
+ - Click <b>Associate identity</b>.
+![packageFile](/docs/img11-assocCAID4.png)
+
+* #### Use your CA to register identities
+  - Select the <b>Org 1 CA</b> Certificate Authority that we created.
+	![packageFile](/docs/img12-regCAAdmin.png)
+  - First, we will register an admin for our organization "org1". 
+	![packageFile](/docs/img12-regCAAdmin2.png)
+  - Click on the <b>Register User</b> button.  Give an <b>Enroll ID</b> of `org1admin`, and <b>Enroll Secret</b> of `org1adminpw`.
+	![packageFile](/docs/img12-regCAAdmin3.png)
+  - Click <b>Next</b>.  Set the <b>Type</b> for this identity as `admin`. We will leave the <b>Maximum enrollments</b> and <b>Add Attributes</b> fields blank.
+	![packageFile](/docs/img12-regCAAdmin4.png)
+
+
+  - We will repeat the process to create an identity of the peer. 
+	![packageFile](/docs/img13-regCAUser.png)
+	
+  - Click on the <b>Register User</b> button.  Give an <b>Enroll ID</b> of `peer1`, and <b>Enroll Secret</b> of `peer1pw`.
+	![packageFile](/docs/img13-regCAUser2.png)
+	![packageFile](/docs/img13-regCAUser3.png)
+  - Click <b>Next</b>.  Set the <b>Type</b> for this identity as `peer` and select `org1` from the affiliated organizations drop-down list. We will leave the <b>Maximum enrollments</b> and <b>Add Attributes</b> fields blank.
+	![packageFile](/docs/img13-regCAUser4.png)
+	
+
+* #### Create the peer organization MSP definition
+  - Navigate to the <b>Organizations</b> tab in the left navigation and click <b>Create MSP definition</b>.
+	![packageFile](/docs/img14-createOrg1MSP.png)
+  - Enter the <b>MSP Display name</b> as `Org1 MSP` and an <b>MSP ID</b> of `org1msp`.
+	![packageFile](/docs/img14-createOrg1MSP2.png)
+  - Under <b>Root Certificate Authority</b> details, specify the peer CA that we created `Org1 CA` as the root CA for the organization.
+	![packageFile](/docs/img14-createOrg1MSP3.png)
+  - Give the <b>Enroll ID</b> and <b>Enroll secret</b> for your organization admin, `org1admin` and `org1adminpw`. Then, give the Identity name, `Org1 Admin`.
+	![packageFile](/docs/img14-createOrg1MSP4.png)
+  - Click the <b>Generate</b> button to enroll this identity as the admin of your organization and export the identity to the wallet.
+	![packageFile](/docs/img14-createOrg1MSP5.png)	 
+  - Click <b>Export</b> to export the admin certificates to your file system. Finally click <b>Create MSP definition</b>.
+	![packageFile](/docs/img14-createOrg1MSP6.png)
+	![packageFile](/docs/img14-createOrg1MSP7.png)
+	![packageFile](/docs/img14-createOrg1MSP8.png)
+
+* Create a peer
+  - On the <b>Nodes</b> page, click <b>Add peer</b>.
+	![packageFile](/docs/img15-addPeer.png)
+  - Click <b>IBM Cloud</b> under Create a new peer and <b>Next</b>.
+	![packageFile](/docs/img15-addPeer2.png) 
+  - Give your peer a <b>Display name</b> of `Peer Org1`.
+  	![packageFile](/docs/img15-addPeer3.png)
+  - On the next screen, select `Org1 CA` as your <b>Certificate Authority</b>. Then, give the <b>Enroll ID</b> and <b>Enroll secret</b> for the peer identity that you created for your peer, `peer1`, and `peer1pw`. Then, select the <b>Administrator Certificate (from MSP)</b>, `Org1 MSP`, from the drop-down list and click <b>Next</b>.
+	![packageFile](/docs/img15-addPeer4.png)
+  - The last side panel will ask you to <b>Associate an identity</b> and make it the admin of your peer. Select your peer admin identity `Org1 Admin`.
+	![packageFile](/docs/img15-addPeer5.png)
+	![packageFile](/docs/img15-addPeer6.png)
+  - Review the summary and click <b>Submit</b>.
+
+
+### Create the node that orders transactions
+
+* #### Create your orderer organization CA
+  - Click <b>Add Certificate Authority</b>.
+	![packageFile](/docs/img16-addOrdererCA.png)
+  - Click <b>IBM Cloud</b> under <b>Create Certificate Authority</b> and <b>Next</b>.
+	![packageFile](/docs/img16-addOrdererCA2.png)
+  - Give it a unique <b>Display name</b> of `Orderer CA`. 
+  - Specify an <b>Admin ID</b> of `admin` and <b>Admin Secret</b> of `adminpw`.
+	![packageFile](/docs/img16-addOrdererCA3.png)
+	![packageFile](/docs/img16-addOrdererCA4.png)
+	![packageFile](/docs/img16-addOrdererCA5.png)
+
+* #### Associate the identity
+
+ - In the Nodes tab, select the <b>Orderer CA</b> once it is running (indicated by the green box in the tile).
+	![packageFile](/docs/img17-ordererCAAssoc.png)
+ - Click <b>Associate identity</b> on the CA overview panel.
+	![packageFile](/docs/img17-ordererCAAssoc2.png)
+ - On the side panel, select <b>Enroll ID</b>.
+ - Provide an <b>Enroll ID</b> of `admin` and an <b>Enroll secret</b> of `adminpw`. Use the default value of `Orderer CA Admin` for the <b>Identity display name</b>.
+	![packageFile](/docs/img17-ordererCAAssoc3.png)
+ - Click <b>Associate identity</b>.
+	![packageFile](/docs/img17-ordererCAAssoc4.png)
+
+
+* #### Use your CA to register orderer and orderer admin identities
+  - In the <b>Nodes</b> tab, select the <b>Orderer CA</b> Certificate Authority that we created.
+  - First, we will register an admin for our organization. Click on the <b>Register User</b> button.
+	![packageFile](/docs/img18-ordererAdmin.png) 
+  - Give an <b>Enroll ID</b> of `ordereradmin`, and <b>Enroll Secret</b> of `ordereradminpw`.  Click <b>Next</b>.  Set the <b>Type</b> for this identity as `client` and select `org1` from the affiliated organizations drop-down list. We will leave the <b>Maximum enrollments</b> and <b>Add Attributes</b> fields blank.
+	![packageFile](/docs/img18-ordererAdmin2.png)
+	![packageFile](/docs/img18-ordererAdmin3.png)
+	![packageFile](/docs/img18-ordererAdmin4.png)
+  - We will repeat the process to create an identity of the orderer. Click on the <b>Register User</b> button.
+  - Give an <b>Enroll ID</b> of `orderer1`, and <b>Enroll Secret</b> of `orderer1pw`.
+	![packageFile](/docs/img19-ordererUser.png)
+  - Set the <b>Type</b> for this identity as `orderer`. We will leave the <b>Maximum enrollments</b> and <b>Add Attributes</b> fields blank.
+
+
+
+
+* #### Create the orderer organization MSP definition
+  - Navigate to the <b>Organizations</b> tab in the left navigation and click <b>Create MSP definition</b>.
+  - Enter the <b>MSP Display name</b> as `Orderer MSP` and an <b>MSP ID</b> of `orderermsp`.
+	![packageFile](/docs/img20-ordererMSP.png)
+  - Under <b>Root Certificate Authority</b> details, specify the peer CA that we created `Orderer CA` as the root CA for the organization.
+	![packageFile](/docs/img20-ordererMSP2.png)
+  - Give the <b>Enroll ID</b> and <b>Enroll secret</b> for your organization admin, `ordereradmin` and `ordereradminpw`. Then, give the <b>Identity name</b>, `Orderer Admin`.
+	![packageFile](/docs/img20-ordererMSP3.png)
+  - Click the <b>Generate</b> button to enroll this identity as the admin of your organization and export the identity to the wallet. Click <b>Export</b> to export the admin certificates to your file system. Finally click <b>Create MSP definition</b>.
+	![packageFile](/docs/img20-ordererMSP4.png)
+
+
+* #### Create an orderer
+  - On the <b>Nodes</b> page, click <b>Add orderer</b>.
+![packageFile](/docs/img21-orderingService.png)
+  - Click <b>IBM Cloud</b> and proceed with <b>Next</b>.
+  - Give your peer a <b>Display name</b> of `Orderer`.
+	![packageFile](/docs/img21-orderingService2.png)
+	![packageFile](/docs/img21-orderingService3.png)
+  - On the next screen, select `Orderer CA` as your <b>Certificate Authority</b>. Then, give the <b>Enroll ID</b> and <b>Enroll secret</b> for the peer identity that you created for your orderer, `orderer1`, and `orderer1pw`. Then, select the <b>Administrator Certificate (from MSP)</b>, `Orderer MSP`, from the drop-down list and click <b>Next</b>.
+	![packageFile](/docs/img21-orderingService4.png)
+  - Give the <b>TLS Enroll ID</b>, `admin`, and <b>TLS Enroll secret</b>, `adminpw`, the same values are the Enroll ID and Enroll secret that you gave when creating the CA.  Leave the <b>TLS CSR hostname</b> blank.
+  - The last side panel will ask to <b>Associate an identity</b> and make it the admin of your peer. Select your peer admin identity `Orderer Admin`.
+	![packageFile](/docs/img21-orderingService5.png)
+  - Review the summary and click <b>Submit</b>.
+	![packageFile](/docs/img21-orderingService6.png)
+	![packageFile](/docs/img21-orderingService7.png)
+
+
+* #### Add organization as Consortium Member on the orderer to transact
+  - Navigate to the <b>Nodes</b> tab, and click on the <b>Orderer</b> that we created.
+	![packageFile](/docs/img22-addOrg.png)
+  - Under <b>Consortium Members</b>, click <b>Add organization</b>.
+	![packageFile](/docs/img22-addOrg2.png)
+	![packageFile](/docs/img22-addOrg3.png)
+  - From the drop-down list, select `Org1 MSP`, as this is the MSP that represents the peer's organization org1.
+	![packageFile](/docs/img22-addOrg4.png)
+  - Click <b>Submit</b>.
+
+
+
+### Create and join channel
+
+* #### Create the channel
+  - Navigate to the <b>Channels</b> tab in the left navigation.
+  - Click <b>Create channel</b>.
+	![packageFile](/docs/img23-channel.png)
+	![packageFile](/docs/img23-channel2.png)
+  - Give the channel a name, `mychannel`.
+  - Select the orderer you created, `Orderer` from the orderers drop-down list.
+	![packageFile](/docs/img23-channel3.png)
+  - Select the MSP identifying the organization of the channel creator from the drop-down list. This should be `Org1 MSP (org1msp)`.
+	![packageFile](/docs/img23-channel4.png)
+	![packageFile](/docs/img23-channel5.png)
+  - Associate available identity as `Org1 Admin`.
+	![packageFile](/docs/img23-channel6.png)
+	![packageFile](/docs/img23-channel7.png)
+  - Click <b>Add</b> next to your organization. Make your organization an <b>Operator</b>.
+  - Click <b>Create</b>.
+	![packageFile](/docs/img23-channel8.png)
+	![packageFile](/docs/img23-channel9.png)
+
+* #### Join your peer to the channel
+  - Click <b>Join channel</b> to launch the side panels.
+	![packageFile](/docs/img24-joinChannel.png)
+  - Select your `Orderer` and click <b>Next</b>.
+	![packageFile](/docs/img24-joinChannel2.png)
+  - Enter the name of the channel you just created. `mychannel` and click <b>Next</b>.
+	![packageFile](/docs/img24-joinChannel3.png)
+  - Select which peers you want to join the channel, click `Peer Org1` .
+	![packageFile](/docs/img24-joinChannel4.png)
+  - Click <b>Submit</b>.
+	![packageFile](/docs/img24-joinChannel5.png)
+
+
+## Step 6. Deploy VaccineSC Smart Contract on the network
+
+* #### Install a smart contract
+  - Click the <b>Smart contracts</b> tab to install the smart contract.
+	![packageFile](/docs/img25-installContract.png)
+  - Click <b>Install smart contract</b> to upload the VaccineSupplyChain smart contract package file, which you packaged earlier using the Visual Studio code extension **look above at the end of step 3**.
+	![packageFile](/docs/img25-installContract2.png)
+  - Click on <b>Add file</b> and find your packaged smart contract.
+	![packageFile](/docs/img25-installContract3.png)
+  - Once the contract is uploaded, click <b>Install</b>.
+	![packageFile](/docs/img25-installContract4.png)
+
+
+* #### Instantiate smart contract
+  - On the smart contracts tab, find the smart contract from the list installed on your peers and click <b>Instantiate</b> from the overflow menu on the right side of the row.
+	![packageFile](/docs/img26-InstantiateContract.png)
+  - On the side panel that opens, select the channel, `mychannel` to instantiate the smart contract on. Click <b>Next</b>.
+	![packageFile](/docs/img26-InstantiateContract2.png)
+  - Select the organization members to be included in the policy, `org1msp`.  Click <b>Next</b>.
+	![packageFile](/docs/img26-InstantiateContract3.png)
+	![packageFile](/docs/img26-InstantiateContract4.png)
+  - Give <b>Function name</b> of `init` and leave <b>Arguments</b> blank.
+	![packageFile](/docs/img26-InstantiateContract5.png)
+  - Click <b>Instantiate</b>.
+	![packageFile](/docs/img26-InstantiateContract6.png)
+
+
+
+## Step 7. Connect application to the network
+
+* #### Connect with sdk through connection profile
+  - Under the Organizations tab, click on `Org1MSP`.
+	![packageFile](/docs/img27-conProfile.png)
+	![packageFile](/docs/img27-conProfile2.png)
+  - Click on <b> Create Connection Profile </b>
+	![packageFile](/docs/img27-conProfile3.png)
+  - Slect Peer PeerOrg1
+	![packageFile](/docs/img27-conProfile4.png)
+  - Download the connection profile by clicking <b>Download Connection Profile</b>.  This will download the connection json which we will use soon to establish connection.
+	![packageFile](/docs/img27-conProfile5.png)
+
+
+
+* #### Create an application admin
+  - Go to the <b>Nodes</b> tab on the left bar, and under <b>Certifacte Authorities</b>, choose your organization CA, <b>Org1 CA</b>.
+  - Click on <b>Register user</b>.
+  - Give an <b>Enroll ID</b> and <b>Enroll Secret</b> to administer your application users, `app-admin` and `app-adminpw`.
+  - Choose `client` as <b>Type</b> and any organization for affiliation.  We can pick `org1` to be consistent.
+  - You can leave the <b>Maximum enrollments</b> blank.
+	![packageFile](/docs/img28-CreateAppAdmin.png)
+  - Under <b>Attributes</b>, click on <b>Add attribute</b>.  Give attribute as `hf.Registrar.Roles` = `*`.  This will allow this identity to act as registrar and issues identities for our app.  Click <b>Add-attribute</b>.
+	![packageFile](/docs/img28-CreateAppAdmin2.png)
+  - Click <b>Register</b>.
+
+
+
+
+
+
+* #### Update application connection
+  - Copy the connection profile you downloaded into [server folder](server)
+  - Name the connection profile you downloaded **ibpConnection.json**
+  - Your new folder structure should look like below (i.e. should have your newly downloaded and newly renamed file **ibpConnection.json**: 
+
+  - The **ibpConnection.json** file should look something like this: 
+
+  - Update the [config.json](server/config.json) file with:
+    - The connection json file name you downloaded.
+    - The <b>enroll id</b> and <b>enroll secret</b> for your app admin, which we earlier provided as `app-admin` and `app-adminpw`.
+    - The orgMSP ID, which we provided as `org1msp`.
+    - The caName, which can be found in your connection json file under "organization" -> "org1msp" -> certificateAuthorities". This would be like an IP address and a port. This is circled in red above.
+    - The username you would like to register.
+    - Update gateway discovery to `{ enabled: true, asLocalhost: false }` to connect to IBP.
+
+> the current default setup is to connect to a local fabric instance from VS Code
+
+- Once you are done, the final version of the **config.json** should look something like this (note that I took the caName from the above pic):
+
+```js
+{
+    "connection_file": "ibpConnection.json",
+    "appAdmin": "app-admin",
+    "appAdminSecret": "app-adminpw",
+    "orgMSPID": "org1msp",
+    "caName": "173.193.106.28:32634",
+    "userName": "user1",
+    "gatewayDiscovery": { "enabled": true, "asLocalhost": false }
+}
+```
+
+
+## Step 8. Run the application
+
+* #### Enroll admin
+  - First, navigate to the `server` directory, and install the node dependencies.
+    ```bash
+    cd server
+    npm install
+    ```
+  - ⚠️ if you get a grpc error run:
+    ```bash
+    npm rebuild
+    ```
+  
+  - Run the `enrollAdmin.js` script
+    ```bash
+    node enrollAdmin.js
+    ```
+
+  - You should see the following in the terminal:
+    ```bash
+    msg: Successfully enrolled admin user app-admin and imported it into the wallet
+    ```
+
+* #### Register User
+  - Run the `registerUser.js` script.
+    ```bash
+    node registerUser.js
+    ```
+
+  - You should see the following in the terminal:
+    ```bash
+    Successfully registered and enrolled admin user user1 and imported it into the wallet
+    ```
+  - If you get an error such as this 
+  
+  ```Error: fabric-ca request register failed with errors [[{"code":0,"message":"Registration of 'user1' failed: Identity 'user1' is already registered"}]]```
+
+  go ahead and change the user in **config.json** file, you can use any
+  username you want. Once you save the **config.json** with a new user, 
+  for example:
+
+  ```
+      "userName": "user4",
+
+  ```
+  Run the same script agian.
+
+
+* #### Start the web client
+  - In a new terminal, open the web-app folder from the room VaccineSC directory.
+    ```bash
+    cd web-app
+    ```
+
+  - Start the client:
+    ```bash
+    npm start
+    ```
+
+
+You can find the app running at http://localhost:8080/explorer  If all goes well, you should see something like the picture below: 
+
+![packageFile](/docs/loopbackEx.png)
+
+
+## Troubleshooting
+If you are getting errors with your IBM Blockchain VSCode extension, ensure 
+you have all prerequisites installed here: https://github.com/IBM-Blockchain/blockchain-vscode-extension#requirements
+
+## Related Links
+* [Hyperledger Fabric Docs](http://hyperledger-fabric.readthedocs.io/en/latest/)
+* [IBM Code Patterns for Blockchain](https://developer.ibm.com/patterns/category/blockchain/)
+
+## License
+This code pattern is licensed under the Apache Software License, Version 2. Separate third-party code objects invoked within this code pattern are licensed by their respective providers pursuant to their own separate licenses. Contributions are subject to the [Developer Certificate of Origin, Version 1.1 (DCO)](https://developercertificate.org/) and the [Apache Software License, Version 2](https://www.apache.org/licenses/LICENSE-2.0.txt).
+
+[Apache Software License (ASL) FAQ](https://www.apache.org/foundation/license-faq.html#WhatDoesItMEAN)

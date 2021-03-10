@@ -1,0 +1,20 @@
+{
+  "ids": {
+    "Company": 1224,
+    "Regulator": 1112
+  },
+  "models": {
+    "Company": {
+      "1": "{\"organization\":\"Novavax\",\"address\":\"Czech Republic\",\"id\":1}",
+      "2": "{\"organization\":\"AstraZeneca\",\"address\":\"EU\",\"id\":2}",
+      "3": "{\"organization\":\"Johnson & Johnson\",\"address\":\"USA\",\"id\":3}",
+      "4": "{\"organization\":\"BioNTech\",\"address\":\"Germany\",\"id\":4}"
+    },
+    "Regulator": {
+      "1": "{\"organization\":\"Novavax\",\"address\":\"Czech Republic\",\"id\":1}",
+      "2": "{\"organization\":\"AstraZeneca\",\"address\":\"EU\",\"id\":2}",
+      "3": "{\"organization\":\"Johnson & Johnson\",\"address\":\"USA\",\"id\":3}",
+      "4": "{\"organization\":\"BioNTech\",\"address\":\"Germany\",\"id\":4}"
+    }
+  }
+}

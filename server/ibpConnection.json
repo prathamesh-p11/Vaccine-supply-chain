@@ -1,0 +1,41 @@
+{
+    "name": "org1mspprofile",
+    "description": "Network on IBP v2",
+    "version": "1.0.0",
+    "client": {
+        "organization": "org1msp"
+    },
+    "organizations": {
+        "org1msp": {
+            "mspid": "org1msp",
+            "certificateAuthorities": [
+                "169.51.195.177:30446"
+            ],
+            "peers": [
+                "169.51.195.177:30472"
+            ]
+        }
+    },
+    "peers": {
+        "169.51.195.177:30472": {
+            "url": "grpcs://169.51.195.177:30472",
+            "tlsCACerts": {
+                "pem": "-----BEGIN CERTIFICATE-----\nMIICDDCCAbKgAwIBAgIUCL3OhHsfzUKI0WFZSHPq3RKzY9cwCgYIKoZIzj0EAwIw\nZDELMAkGA1UEBhMCVVMxFzAVBgNVBAgTDk5vcnRoIENhcm9saW5hMRQwEgYDVQQK\nEwtIeXBlcmxlZGdlcjEPMA0GA1UECxMGRmFicmljMRUwEwYDVQQDEwxvcmcxY2Et\ndGxzY2EwHhcNMjAxMjIzMDU0MzAwWhcNMzUxMjIwMDU0MzAwWjBkMQswCQYDVQQG\nEwJVUzEXMBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExFDASBgNVBAoTC0h5cGVybGVk\nZ2VyMQ8wDQYDVQQLEwZGYWJyaWMxFTATBgNVBAMTDG9yZzFjYS10bHNjYTBZMBMG\nByqGSM49AgEGCCqGSM49AwEHA0IABM4LUZFPns/2AV1uWmhZDU2MjABsPn535cqN\nu+7MbtCYt3gaRBMhHZ6dTG1sgQMAFy4K+UJCmPUyWQ7ssldDqvejQjBAMA4GA1Ud\nDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBRbY2+w7Egt8E5L\nscRYK9xYm85IvDAKBggqhkjOPQQDAgNIADBFAiEA1C7qWy5TqL7gW8Xqed9t+B9U\nUqbsWMLeT1hPqBqLo28CIEhF+zZDwtX07f+uHPXM+NC+ji/whQ4gx0y+wndzRHSr\n-----END CERTIFICATE-----\n"
+            },
+            "grpcOptions": {
+                "ssl-target-name-override": "169.51.195.177"
+            }
+        }
+    },
+    "certificateAuthorities": {
+        "169.51.195.177:30446": {
+            "url": "https://169.51.195.177:30446",
+            "caName": "ca",
+            "tlsCACerts": {
+                "pem": [
+                    "-----BEGIN CERTIFICATE-----\nMIIB/jCCAaOgAwIBAgIQDz/2wFw+o6T4RPUn0VNUWDAKBggqhkjOPQQDAjBzMQsw\nCQYDVQQGEwJVUzEXMBUGA1UECBMOTm9ydGggQ2Fyb2xpbmExDzANBgNVBAcTBkR1\ncmhhbTEMMAoGA1UEChMDSUJNMRMwEQYDVQQLEwpCbG9ja2NoYWluMRcwFQYDVQQD\nEw4xNjkuNTEuMTk1LjE3NzAeFw0yMDEyMjMwNTQ3NDVaFw0zMDEyMjEwNTQ3NDVa\nMHMxCzAJBgNVBAYTAlVTMRcwFQYDVQQIEw5Ob3J0aCBDYXJvbGluYTEPMA0GA1UE\nBxMGRHVyaGFtMQwwCgYDVQQKEwNJQk0xEzARBgNVBAsTCkJsb2NrY2hhaW4xFzAV\nBgNVBAMTDjE2OS41MS4xOTUuMTc3MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE\njdFPbGGGkL6N3wim5W5931U61LZXo+FgHGoNzk2KGv2ux/Vw2556W1Pe7EKI9ZFm\n03939W7rWNgay138Vf6zLqMZMBcwFQYDVR0RBA4wDIcEqTPDsYcEqTPDsTAKBggq\nhkjOPQQDAgNJADBGAiEAtfl0k32OMu22yZng6pBpKkEI3ct5dF5wPMQpYNSgf3wC\nIQCcXs2LrPU1rLRg7UIw74+2RLns6lrFjCSJepg0OaCzyw==\n-----END CERTIFICATE-----\n"
+                ]
+            }
+        }
+    }
+}
